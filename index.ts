@@ -21,25 +21,42 @@ function isGenerateContentRequest(url: URL): boolean {
 async function handler(request: Request): Promise<Response> {
     const url = new URL(request.url);
     url.host = 'generativelanguage.googleapis.com';
-  
-    if (!(request.method === 'POST' || isGenerateContentRequest(url))) return fetch(new Request(url, request))
+    
+    console.log('Method:', request.method);
+    console.log('URL:', url.toString());
+    console.log('Is generate content:', isGenerateContentRequest(url));
+
+    if (!(request.method === 'POST' && isGenerateContentRequest(url))) {
+        console.log('Forwarding non-POST/non-generate request');
+        return fetch(url, request);
+    }
   
     const modelName = url.pathname.split('/').pop()?.split(':')[0];
+    console.log('Model name:', modelName);
+    
     let oldBody = {};
     try {
         oldBody = await request.json();
+        console.log('Original body:', oldBody);
     } catch (e) {
+        console.error('Error parsing body:', e);
     }
 
     const body = modelName ? {
         ...(oldBody), 
         safetySettings: safetySettings(modelName)
     } : oldBody;
+    
+    console.log('New body:', body);
 
-    return fetch(new Request(url, {
-        ...request,
+    const newRequest = {
+        method: 'POST',
+        headers: request.headers,
         body: JSON.stringify(body)
-    }));
+    };
+    console.log('New request:', newRequest);
+
+    return fetch(url, newRequest);
 }
 
 Deno.serve(handler);
