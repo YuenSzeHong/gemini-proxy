@@ -22,7 +22,7 @@ async function handler(request: Request): Promise<Response> {
     const url = new URL(request.url);
     url.host = 'generativelanguage.googleapis.com';
   
-    if (!(request.method === 'POST' && isGenerateContentRequest(url))) return fetch(new Request(url, request))
+    if (!(request.method === 'POST' || isGenerateContentRequest(url))) return fetch(new Request(url, request))
   
     const modelName = url.pathname.split('/').pop()?.split(':')[0];
     let oldBody = {};
