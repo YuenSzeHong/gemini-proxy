@@ -22,22 +22,22 @@ async function handler(request: Request): Promise<Response> {
     const url = new URL(request.url);
     url.host = 'generativelanguage.googleapis.com';
     
-    console.log('Method:', request.method);
-    console.log('URL:', url.toString());
-    console.log('Is generate content:', isGenerateContentRequest(url));
+    console.debug('Method:', request.method);
+    console.debug('URL:', url.toString());
+    console.debug('Is generate content:', isGenerateContentRequest(url));
 
     if (!(request.method === 'POST' && isGenerateContentRequest(url))) {
-        console.log('Forwarding non-POST/non-generate request');
+        console.debug('Forwarding non-POST/non-generate request');
         return fetch(url, request);
     }
   
     const modelName = url.pathname.split('/').pop()?.split(':')[0];
-    console.log('Model name:', modelName);
+    console.debug('Model name:', modelName);
     
     let oldBody = {};
     try {
         oldBody = await request.json();
-        console.log('Original body:', oldBody);
+        console.debug('Original body:', oldBody);
     } catch (e) {
         console.error('Error parsing body:', e);
     }
@@ -47,14 +47,14 @@ async function handler(request: Request): Promise<Response> {
         safetySettings: safetySettings(modelName)
     } : oldBody;
     
-    console.log('New body:', body);
+    console.debug('New body:', body);
 
     const newRequest = {
         method: 'POST',
         headers: request.headers,
         body: JSON.stringify(body)
     };
-    console.log('New request:', newRequest);
+    console.debug('New request:', newRequest);
 
     return fetch(url, newRequest);
 }
